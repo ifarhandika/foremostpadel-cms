@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* antd reset */
+@import 'antd/dist/reset.css';
+
+html, body, #root { height: 100%; }
