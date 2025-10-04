@@ -29,7 +29,7 @@ export default function AdminLayout({ children }) {
         </Menu>
       </Sider>
       <Layout>
-        <Header style={{ background: '#fff', display: 'flex', justifyContent: 'flex-end' }}>
+        <Header style={{ background: '#fff', display: 'flex', justifyContent: 'flex-end', alignItems: 'center', padding: '0 16px' }}>
           <Button onClick={logout}>Logout</Button>
         </Header>
         <Content style={{ margin: 16 }}>
