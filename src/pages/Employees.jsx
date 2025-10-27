@@ -11,12 +11,14 @@ import {
   Image,
   Popconfirm,
   DatePicker,
+  Tag,
+  Select,
 } from "antd"
 import { UploadOutlined } from "@ant-design/icons"
-import eventService from "../services/event"
+import employeeService from "../services/employee"
 import dayjs from "dayjs"
 
-export default function Events() {
+export default function Employees() {
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(false)
   const [visible, setVisible] = useState(false)
@@ -27,10 +29,10 @@ export default function Events() {
   const load = async () => {
     setLoading(true)
     try {
-      const data = await eventService.getEvents()
+      const data = await employeeService.getEmployees()
       setRows(data.rows || data || [])
     } catch (e) {
-      message.error("Failed to load events")
+      message.error("Failed to load employees")
     } finally {
       setLoading(false)
     }
@@ -50,15 +52,16 @@ export default function Events() {
   const openEdit = (record) => {
     setEditing(record)
     form.setFieldsValue({
-      event_name: record.event_name,
-      notes: record.notes,
-      description: record.description,
-      location: record.location,
-      time: record.time ? dayjs(record.time) : null,
+      employee_name: record.employee_name,
+      status: record.status,
+      role: record.role,
+      join_date: record.join_date ? dayjs(record.join_date) : null,
+      leave_date: record.leave_date ? dayjs(record.leave_date) : null,
+      row_status: record.row_status,
     })
     setFileList(
-      record.event_image
-        ? [{ uid: "-1", name: "image", url: record.event_image }]
+      record.employee_image
+        ? [{ uid: "-1", name: "image", url: record.employee_image }]
         : []
     )
     setVisible(true)
@@ -72,26 +75,29 @@ export default function Events() {
           : null
 
       const payload = {
-        event_name: vals.event_name,
-        notes: vals.notes,
-        description: vals.description,
-        time: vals.time ? vals.time.format("YYYY-MM-DD HH:mm:ss") : null,
-        location: vals.location,
+        employee_name: vals.employee_name,
+        status: vals.status,
+        role: vals.role,
+        join_date: vals.join_date ? vals.join_date.format("YYYY-MM-DD") : null,
+        leave_date: vals.leave_date
+          ? vals.leave_date.format("YYYY-MM-DD")
+          : null,
+        row_status: vals.row_status,
         imageFile,
       }
 
       if (editing) {
-        await eventService.updateEvent(editing.id, {
+        await employeeService.updateEmployee(editing.id, {
           ...payload,
           updated_by: "admin",
         })
-        message.success("Event updated")
+        message.success("Employee updated")
       } else {
-        await eventService.createEvent({
+        await employeeService.createEmployee({
           ...payload,
           created_by: "admin",
         })
-        message.success("Event created")
+        message.success("Employee created")
       }
 
       setVisible(false)
@@ -104,7 +110,7 @@ export default function Events() {
 
   const onDelete = async (id) => {
     try {
-      await eventService.deleteEvent(id)
+      await employeeService.deleteEmployee(id)
       message.success("Deleted")
       load()
     } catch (e) {
@@ -114,20 +120,33 @@ export default function Events() {
 
   const columns = [
     { title: "ID", dataIndex: "id", width: 60 },
-    { title: "Event Name", dataIndex: "event_name" },
-    { title: "Notes", dataIndex: "notes" },
-    { title: "Description", dataIndex: "description" },
-    {
-      title: "Time",
-      dataIndex: "time",
-      render: (v) => (v ? dayjs(v).format("YYYY-MM-DD") : "-"),
-    },
-    { title: "Location", dataIndex: "location" },
+    { title: "Name", dataIndex: "employee_name" },
+    { title: "Role", dataIndex: "role" },
     {
       title: "Image",
-      dataIndex: "event_image",
+      dataIndex: "employee_image",
       render: (v) =>
-        v ? <Image src={v} width={100} style={{ borderRadius: 6 }} /> : null,
+        v ? <Image src={v} width={80} style={{ borderRadius: 6 }} /> : null,
+    },
+    {
+      title: "Join Date",
+      dataIndex: "join_date",
+      render: (v) => (v ? dayjs(v).format("YYYY-MM-DD") : "-"),
+    },
+    {
+      title: "Leave Date",
+      dataIndex: "leave_date",
+      render: (v) => (v ? dayjs(v).format("YYYY-MM-DD") : "-"),
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      render: (v) =>
+        v === "active" ? (
+          <span style={{ color: "green", fontWeight: 500 }}>Active</span>
+        ) : (
+          <span style={{ color: "red", fontWeight: 500 }}>Inactive</span>
+        ),
     },
     { title: "Created By", dataIndex: "created_by" },
     {
@@ -156,7 +175,7 @@ export default function Events() {
     <AdminLayout>
       <div style={{ marginBottom: 16 }}>
         <Button type="primary" onClick={openCreate}>
-          New Event
+          New Employee
         </Button>
       </div>
 
@@ -169,7 +188,7 @@ export default function Events() {
       />
 
       <Modal
-        title={editing ? "Edit Event" : "Create Event"}
+        title={editing ? "Edit Employee" : "Create Employee"}
         open={visible}
         onCancel={() => setVisible(false)}
         footer={null}
@@ -177,34 +196,41 @@ export default function Events() {
       >
         <Form form={form} onFinish={onFinish} layout="vertical">
           <Form.Item
-            name="event_name"
-            label="Event Name"
-            rules={[{ required: true, message: "Please enter event name" }]}
+            name="employee_name"
+            label="Employee Name"
+            rules={[{ required: true, message: "Please enter employee name" }]}
           >
-            <Input placeholder="Enter event name" />
+            <Input placeholder="Enter employee name" />
           </Form.Item>
 
-          <Form.Item name="notes" label="Notes">
-            <Input.TextArea rows={2} placeholder="Enter notes" />
+          <Form.Item
+            name="role"
+            label="Role"
+            rules={[{ required: true, message: "Please enter role" }]}
+          >
+            <Input placeholder="Enter role" />
           </Form.Item>
 
-          <Form.Item name="description" label="Description">
-            <Input.TextArea rows={3} placeholder="Enter description" />
+          <Form.Item name="join_date" label="Join Date">
+            <DatePicker format="YYYY-MM-DD" style={{ width: "100%" }} />
           </Form.Item>
 
-          <Form.Item name="time" label="Time">
-            <DatePicker
-              showTime
-              format="YYYY-MM-DD HH:mm:ss"
-              style={{ width: "100%" }}
-            />
+          <Form.Item name="leave_date" label="Leave Date">
+            <DatePicker format="YYYY-MM-DD" style={{ width: "100%" }} />
           </Form.Item>
 
-          <Form.Item name="location" label="Location">
-            <Input placeholder="Enter location" />
+          <Form.Item
+            name="status"
+            label="Status"
+            rules={[{ required: true, message: "Please select status" }]}
+          >
+            <Select>
+              <Select.Option value="active">Active</Select.Option>
+              <Select.Option value="inactive">Inactive</Select.Option>
+            </Select>
           </Form.Item>
 
-          <Form.Item label="Event Image">
+          <Form.Item label="Employee Image">
             <Upload {...uploadProps} maxCount={1}>
               <Button icon={<UploadOutlined />}>Select Image</Button>
             </Upload>
@@ -212,7 +238,7 @@ export default function Events() {
 
           <Form.Item>
             <Button type="primary" htmlType="submit" block>
-              {editing ? "Save Changes" : "Create Event"}
+              {editing ? "Save Changes" : "Create Employee"}
             </Button>
           </Form.Item>
         </Form>

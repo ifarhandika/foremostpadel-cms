@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard"
 import Courts from "./pages/Courts"
 import Events from "./pages/Events"
 import Investors from "./pages/Investors"
+import Employees from "./pages/Employees"
 import PrivateRoute from "./components/PrivateRoute"
 
 export default function AppRoutes() {
@@ -44,6 +45,15 @@ export default function AppRoutes() {
         element={
           <PrivateRoute>
             <Investors />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/employee"
+        element={
+          <PrivateRoute>
+            <Employees />
           </PrivateRoute>
         }
       />

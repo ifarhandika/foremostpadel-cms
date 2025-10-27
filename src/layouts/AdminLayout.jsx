@@ -26,6 +26,9 @@ export default function AdminLayout({ children }) {
           <Menu.Item key="/investor">
             <Link to="/investor">Investors</Link>
           </Menu.Item>
+          <Menu.Item key="/employee">
+            <Link to="/employee">Employees</Link>
+          </Menu.Item>
         </Menu>
       </Sider>
       <Layout>
